@@ -9,9 +9,9 @@
 - [x] Fix login template link text
 
 ### 🔄 In Progress
-- [ ] Add initial data for Country and Category models
-- [ ] Create CRUD views for Country and Category
-- [ ] Create dashboard template
+- [x] Add initial data for Country and Category models
+- [x] Create CRUD views for Country and Category
+- [x] Create dashboard template
 - [ ] Implement freight calculator APIs
 - [ ] Integrate with Raja Ongkir API
 - [ ] Create Vue.js frontend calculator
@@ -20,9 +20,9 @@
 ### 📋 Detailed Tasks
 
 #### 1. Database Setup
-- [ ] Create migration for Country and Category models
-- [ ] Add initial data (5 countries, 10+ categories)
-- [ ] Run migrations
+- [x] Create migration for Country and Category models
+- [x] Add initial data (5 countries, 10+ categories)
+- [x] Run migrations
 
 #### 2. CRUD Operations
 - [ ] Create Country CRUD views (list, create, update, delete)

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-c26_%91&48eo)=ukj^%2)lk(+xh%)__iy1ol*lc%=nb1)cjf2m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -130,7 +130,14 @@ REST_FRAMEWORK = {
     ]
 }
 
-AUTH_USER_MODEL = 'shipping.User'  # Commented out to use default Django User model
-
+AUTH_USER_MODEL = 'shipping.User'
 # Login URL
-# LOGIN_URL = '/login/'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = [
+    'https://8001-ialvgtnrd4i64ac54cwo2-791f76c7.manusvm.computer',
+    'https://8000-ialvgtnrd4i64ac54cwo2-791f76c7.manusvm.computer',
+    'https://*.manusvm.computer',
+]

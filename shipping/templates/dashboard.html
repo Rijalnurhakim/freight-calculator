@@ -186,6 +186,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="categoryForm">
+                        {% csrf_token %}
                         <input type="hidden" id="categoryId" name="categoryId">
                         <div class="mb-3">
                             <label class="form-label">Country *</label>
@@ -352,6 +353,128 @@
                 })
                 .catch(error => {
                     // Menangkap semua kesalahan jaringan atau kesalahan yang dilempar dari blok .then
+                    console.error('Error:', error);
+                    showAlert(error.message, 'danger');
+                });
+            }
+        }
+
+        // Fungsi untuk membuka modal kategori, bisa untuk tambah atau edit
+        function openCategoryModal(isEdit = false, category = {}) {
+            // Reset form dan variabel
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryId').value = '';
+            currentCategoryId = null;
+
+            if (isEdit && category) {
+                // Mode edit
+                currentCategoryId = category.id;
+                document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+                document.getElementById('categorySaveText').textContent = 'Update';
+                document.getElementById('categoryId').value = category.id;
+                document.getElementById('categoryCountry').value = category.country_id; // Pastikan ini sesuai dengan ID negara
+                document.getElementById('categoryTitle').value = category.category_title;
+                document.getElementById('categoryPrice').value = category.price_per_kilo;
+            } else {
+                // Mode tambah
+                document.getElementById('categoryModalTitle').textContent = 'Add Category';
+                document.getElementById('categorySaveText').textContent = 'Save';
+            }
+        }
+
+        // Fungsi untuk menyimpan atau memperbarui kategori
+        function saveCategory() {
+            const form = document.getElementById('categoryForm');
+            const formData = new FormData(form);
+
+            const data = {
+                country: formData.get('country'),
+                category_title: formData.get('category_title'),
+                price_per_kilo: formData.get('price_per_kilo')
+            };
+
+            const isEdit = currentCategoryId !== null;
+            const url = isEdit ? `/categories/${currentCategoryId}/update/` : '/categories/create/';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken() // Menggunakan fungsi getCsrfToken yang sudah ada
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+
+                    if (isEdit) {
+                        updateCategoryRow(data.category); // Fungsi untuk memperbarui baris di tabel
+                    } else {
+                        addCategoryRow(data.category); // Fungsi untuk menambahkan baris baru ke tabel
+                    }
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred: ' + error.message, 'danger');
+            });
+        }
+        function editCategory(categoryId) {
+            currentCategoryId = categoryId;
+
+            fetch(`/categories/${categoryId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const category = data.category;
+                    document.getElementById('categoryId').value = category.id;
+                    document.getElementById('categoryCountry').value = category.country; // Mengisi select dengan ID negara
+                    document.getElementById('categoryTitle').value = category.category_title;
+                    document.getElementById('categoryPrice').value = category.price_per_kilo;
+
+                    document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+                    document.getElementById('categorySaveText').textContent = 'Update';
+
+                    new bootstrap.Modal(document.getElementById('categoryModal')).show();
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred: ' + error.message, 'danger');
+            });
+        }
+        function deleteCategory(categoryId) {
+            if (confirm('Are you sure you want to delete this category?')) {
+                fetch(`/categories/${categoryId}/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || 'Failed to delete the category.');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showAlert(data.message, 'success');
+                        // Asumsi ada id row yang unik di tabel kategori, contoh: category-row-1
+                        document.getElementById(`category-row-${categoryId}`).remove();
+                    } else {
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
                     console.error('Error:', error);
                     showAlert(error.message, 'danger');
                 });
