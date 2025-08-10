@@ -5,33 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freight Calculator Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Freight Calculator</a>
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-truck"></i> Freight Calculator
+            </a>
             <div class="navbar-nav ms-auto">
                 <span class="navbar-text me-3">Welcome, {{ user.username }}!</span>
-                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
             </div>
         </div>
     </nav>
+
+    <!-- Alert Container -->
+    <div class="container mt-3">
+        <div id="alertContainer"></div>
+    </div>
 
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">
-                        <h5>Countries Management</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-globe"></i> Countries Management</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#countryModal" onclick="openCountryModal()">
+                            <i class="bi bi-plus-circle"></i> Add Country
+                        </button>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#countryModal">
-                            Add Country
-                        </button>
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped" id="countriesTable">
                                 <thead>
                                     <tr>
+                                        <th>Flag</th>
                                         <th>Name</th>
                                         <th>Currency</th>
                                         <th>Actions</th>
@@ -39,17 +50,22 @@
                                 </thead>
                                 <tbody>
                                     {% for country in countries %}
-                                    <tr>
+                                    <tr id="country-row-{{ country.id }}">
+                                        <td><img src="{{ country.country_flag }}" alt="{{ country.country_name }}" width="30" height="20"></td>
                                         <td>{{ country.country_name }}</td>
                                         <td>{{ country.country_currency }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" onclick="editCountry({{ country.id }})">Edit</button>
-                                            <button class="btn btn-sm btn-danger" onclick="deleteCountry({{ country.id }})">Delete</button>
+                                            <button class="btn btn-sm btn-warning" onclick="editCountry({{ country.id }})">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteCountry({{ country.id }})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                     {% empty %}
-                                    <tr>
-                                        <td colspan="3">No countries found</td>
+                                    <tr id="no-countries">
+                                        <td colspan="4" class="text-center">No countries found</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -61,15 +77,15 @@
 
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">
-                        <h5>Categories Management</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-tags"></i> Categories Management</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="openCategoryModal()">
+                            <i class="bi bi-plus-circle"></i> Add Category
+                        </button>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#categoryModal">
-                            Add Category
-                        </button>
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped" id="categoriesTable">
                                 <thead>
                                     <tr>
                                         <th>Title</th>
@@ -80,18 +96,22 @@
                                 </thead>
                                 <tbody>
                                     {% for category in categories %}
-                                    <tr>
+                                    <tr id="category-row-{{ category.id }}">
                                         <td>{{ category.category_title }}</td>
                                         <td>{{ category.country.country_name }}</td>
-                                        <td>{{ category.price_per_kilo }}</td>
+                                        <td>Rp {{ category.price_per_kilo|floatformat:0 }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-warning" onclick="editCategory({{ category.id }})">Edit</button>
-                                            <button class="btn btn-sm btn-danger" onclick="deleteCategory({{ category.id }})">Delete</button>
+                                            <button class="btn btn-sm btn-warning" onclick="editCategory({{ category.id }})">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteCategory({{ category.id }})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                     {% empty %}
-                                    <tr>
-                                        <td colspan="4">No categories found</td>
+                                    <tr id="no-categories">
+                                        <td colspan="4" class="text-center">No categories found</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -106,10 +126,12 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Freight Calculator</h5>
+                        <h5><i class="bi bi-calculator"></i> Freight Calculator</h5>
                     </div>
                     <div class="card-body">
-                        <a href="/calculator/" class="btn btn-success">Open Calculator</a>
+                        <a href="/calculator/" class="btn btn-success">
+                            <i class="bi bi-calculator"></i> Open Calculator
+                        </a>
                         <p class="mt-2">Use the calculator to calculate international and domestic shipping costs.</p>
                     </div>
                 </div>
@@ -122,29 +144,33 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Country</h5>
+                    <h5 class="modal-title" id="countryModalTitle">Add Country</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="countryForm">
-                        {% csrf_token %}
+                        <input type="hidden" id="countryId" name="countryId">
                         <div class="mb-3">
-                            <label class="form-label">Country Name</label>
-                            <input type="text" class="form-control" name="country_name" required>
+                            <label class="form-label">Country Name *</label>
+                            <input type="text" class="form-control" id="countryName" name="country_name" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Country Flag URL</label>
-                            <input type="url" class="form-control" name="country_flag" required>
+                            <label class="form-label">Country Flag URL *</label>
+                            <input type="url" class="form-control" id="countryFlag" name="country_flag" required>
+                            <div class="form-text">Example: https://flagcdn.com/w320/us.png</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Currency</label>
-                            <input type="text" class="form-control" name="country_currency" required>
+                            <label class="form-label">Currency *</label>
+                            <input type="text" class="form-control" id="countryCurrency" name="country_currency" required>
+                            <div class="form-text">Example: USD, EUR, IDR</div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCountry()">Save</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCountry()">
+                        <span id="countrySaveText">Save</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -155,15 +181,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Category</h5>
+                    <h5 class="modal-title" id="categoryModalTitle">Add Category</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="categoryForm">
-                        {% csrf_token %}
+                        <input type="hidden" id="categoryId" name="categoryId">
                         <div class="mb-3">
-                            <label class="form-label">Country</label>
-                            <select class="form-control" name="country" required>
+                            <label class="form-label">Country *</label>
+                            <select class="form-control" id="categoryCountry" name="country" required>
                                 <option value="">Select Country</option>
                                 {% for country in countries %}
                                 <option value="{{ country.id }}">{{ country.country_name }}</option>
@@ -171,18 +197,20 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Category Title</label>
-                            <input type="text" class="form-control" name="category_title" required>
+                            <label class="form-label">Category Title *</label>
+                            <input type="text" class="form-control" id="categoryTitle" name="category_title" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Price per Kilo</label>
-                            <input type="number" class="form-control" name="price_per_kilo" required>
+                            <label class="form-label">Price per Kilo (Rp) *</label>
+                            <input type="number" class="form-control" id="categoryPrice" name="price_per_kilo" required min="0">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCategory()">Save</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCategory()">
+                        <span id="categorySaveText">Save</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -190,33 +218,143 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Global variables
+        let currentCountryId = null;
+        let currentCategoryId = null;
+
+        // Utility functions
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            alertContainer.appendChild(alertDiv);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function getCsrfToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Country CRUD Functions
+        function openCountryModal(isEdit = false) {
+            currentCountryId = null;
+            document.getElementById('countryModalTitle').textContent = 'Add Country';
+            document.getElementById('countrySaveText').textContent = 'Save';
+            document.getElementById('countryForm').reset();
+            document.getElementById('countryId').value = '';
+        }
+
         function saveCountry() {
-            // Implementation for saving country
-            alert('Country save functionality will be implemented');
+            const form = document.getElementById('countryForm');
+            const formData = new FormData(form);
+
+            const data = {
+                country_name: formData.get('country_name'),
+                country_flag: formData.get('country_flag'),
+                country_currency: formData.get('country_currency')
+            };
+
+            const isEdit = currentCountryId !== null;
+            const url = isEdit ? `/countries/${currentCountryId}/update/` : '/countries/create/';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('countryModal')).hide();
+
+                    if (isEdit) {
+                        updateCountryRow(data.country);
+                    } else {
+                        addCountryRow(data.country);
+                    }
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred: ' + error.message, 'danger');
+            });
         }
 
-        function saveCategory() {
-            // Implementation for saving category
-            alert('Category save functionality will be implemented');
+        function editCountry(countryId) {
+            currentCountryId = countryId;
+
+            fetch(`/countries/${countryId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const country = data.country;
+                    document.getElementById('countryId').value = country.id;
+                    document.getElementById('countryName').value = country.country_name;
+                    document.getElementById('countryFlag').value = country.country_flag;
+                    document.getElementById('countryCurrency').value = country.country_currency;
+
+                    document.getElementById('countryModalTitle').textContent = 'Edit Country';
+                    document.getElementById('countrySaveText').textContent = 'Update';
+
+                    new bootstrap.Modal(document.getElementById('countryModal')).show();
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred: ' + error.message, 'danger');
+            });
         }
 
-        function editCountry(id) {
-            alert('Edit country functionality will be implemented');
-        }
-
-        function deleteCountry(id) {
-            if (confirm('Are you sure you want to delete this country?')) {
-                alert('Delete country functionality will be implemented');
-            }
-        }
-
-        function editCategory(id) {
-            alert('Edit category functionality will be implemented');
-        }
-
-        function deleteCategory(id) {
-            if (confirm('Are you sure you want to delete this category?')) {
-                alert('Delete category functionality will be implemented');
+        function deleteCountry(countryId) {
+            if (confirm('Are you sure you want to delete this country? This will also delete all associated categories.')) {
+                fetch(`/countries/${countryId}/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => {
+                    // Memeriksa jika responsenya sukses (status code 200-299)
+                    if (!response.ok) {
+                        // Jika tidak sukses, melempar error agar ditangkap oleh blok .catch
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || 'Failed to delete the country.');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Jika sukses, tampilkan pesan dan hapus baris dari tabel
+                        showAlert(data.message, 'success');
+                        document.getElementById(`country-row-${countryId}`).remove();
+                    } else {
+                        // Jika 'success' adalah false (berasal dari logika di backend)
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    // Menangkap semua kesalahan jaringan atau kesalahan yang dilempar dari blok .then
+                    console.error('Error:', error);
+                    showAlert(error.message, 'danger');
+                });
             }
         }
     </script>

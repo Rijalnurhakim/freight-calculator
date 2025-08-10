@@ -8,6 +8,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
 
 from .models import User, Country, Category
 from .serializers import RegisterSerializer, UserSerializer, CountrySerializer, CategorySerializer
@@ -96,32 +100,210 @@ def logout_view(request):
     logout(request)
     return redirect('/login')
 
-# @api_view(['POST'])
-# def api_login(request):
-#     username = request.data.get['username']
-#     password = request.data.get['password']
-#     user = authenticate(username=username, password=password)
-#     if user:
-#         token, created = Token.objects.get_or_create(user=user)
-#         return Response({'token': token.key})
-#     return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+# CRUD Views for Countries
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_country(request):
+    try:
+        data = json.loads(request.body)
+        country = Country.objects.create(
+            country_name=data['country_name'],
+            country_flag=data['country_flag'],
+            country_currency=data['country_currency']
+        )
+        return JsonResponse({
+            'success': True,
+            'message': 'Country created successfully',
+            'country': {
+                'id': country.id,
+                'country_name': country.country_name,
+                'country_flag': country.country_flag,
+                'country_currency': country.country_currency
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
 
-# class LoginAPIView(APIView):
-#     def post(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#
-#         print(f"Mencoba login dengan username: {username} dan password: {password}")
-#
-#         user = authenticate(request, username=username, password=password)
-#
-#         if user:
-#             token, created = Token.objects.get_or_create(user=user)
-#             return Response({"token": token.key}, status=status.HTTP_200_OK)
-#         else:
-#             print("Otentikasi gagal!")
-#             return Response({"error": "Kredensial tidak valid"}, status=status.HTTP_401_UNAUTHORIZED)
+@login_required
+def get_country(request, country_id):
+    try:
+        country = get_object_or_404(Country, id=country_id)
+        return JsonResponse({
+            'success': True,
+            'country': {
+                'id': country.id,
+                'country_name': country.country_name,
+                'country_flag': country.country_flag,
+                'country_currency': country.country_currency
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
 
+
+@login_required
+@csrf_exempt
+@require_http_methods(["PUT"])
+def update_country(request, country_id):
+    try:
+        data = json.loads(request.body)
+        country = get_object_or_404(Country, id=country_id)
+
+        country.country_name = data['country_name']
+        country.country_flag = data['country_flag']
+        country.country_currency = data['country_currency']
+        country.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Country updated successfully',
+            'country': {
+                'id': country.id,
+                'country_name': country.country_name,
+                'country_flag': country.country_flag,
+                'country_currency': country.country_currency
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_country(request, country_id):
+    try:
+        country = get_object_or_404(Country, id=country_id)
+        country_name = country.country_name
+        country.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Country "{country_name}" deleted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+# CRUD Views for Categories
+@login_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_category(request):
+    try:
+        data = json.loads(request.body)
+        country = get_object_or_404(Country, id=data['country'])
+
+        category = Category.objects.create(
+            country=country,
+            category_title=data['category_title'],
+            price_per_kilo=data['price_per_kilo']
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Category created successfully',
+            'category': {
+                'id': category.id,
+                'country': category.country.id,
+                'country_name': category.country.country_name,
+                'category_title': category.category_title,
+                'price_per_kilo': category.price_per_kilo
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def get_category(request, category_id):
+    try:
+        category = get_object_or_404(Category, id=category_id)
+        return JsonResponse({
+            'success': True,
+            'category': {
+                'id': category.id,
+                'country': category.country.id,
+                'country_name': category.country.country_name,
+                'category_title': category.category_title,
+                'price_per_kilo': category.price_per_kilo
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["PUT"])
+def update_category(request, category_id):
+    try:
+        data = json.loads(request.body)
+        category = get_object_or_404(Category, id=category_id)
+        country = get_object_or_404(Country, id=data['country'])
+
+        category.country = country
+        category.category_title = data['category_title']
+        category.price_per_kilo = data['price_per_kilo']
+        category.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Category updated successfully',
+            'category': {
+                'id': category.id,
+                'country': category.country.id,
+                'country_name': category.country.country_name,
+                'category_title': category.category_title,
+                'price_per_kilo': category.price_per_kilo
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+@login_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_category(request, category_id):
+    try:
+        category = get_object_or_404(Category, id=category_id)
+        category_title = category.category_title
+        category.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Category "{category_title}" deleted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+# API Views for Calculator
 @api_view(['GET'])
 def search_countries(request):
     search = request.GET.get('search', '')
@@ -161,7 +343,6 @@ def search_destinations(request):
         destinations = [d for d in destinations if search.lower() in d['city'].lower()]
 
     return Response(destinations)
-
 
 @api_view(['POST'])
 def calculate_freight(request):

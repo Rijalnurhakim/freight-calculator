@@ -26,6 +26,18 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
+    # CRUD URLs for Countries
+    path('countries/create/', views.create_country, name='create_country'),
+    path('countries/<int:country_id>/', views.get_country, name='get_country'),
+    path('countries/<int:country_id>/update/', views.update_country, name='update_country'),
+    path('countries/<int:country_id>/delete/', views.delete_country, name='delete_country'),
+
+    # CRUD URLs for Categories
+    path('categories/create/', views.create_category, name='create_category'),
+    path('categories/<int:category_id>/', views.get_category, name='get_category'),
+    path('categories/<int:category_id>/update/', views.update_category, name='update_category'),
+    path('categories/<int:category_id>/delete/', views.delete_category, name='delete_category'),
+
     # Authentication URLs
     # path('api/register/', RegisterAPI.as_view(), name='register'),
     # path('api/logout/', knox_views.LogoutView.as_view(), name='logout'),
@@ -37,26 +49,5 @@ urlpatterns = [
     # path('login/', views.login_view, name='login'),
     # path('logout/', views.logout_view, name='logout'),
 
-    # Dashboard
-    # path('', crud_views.dashboard, name='dashboard'),
-    # path('calculator/', crud_views.calculator, name='calculator'),
-
-    # Country CRUD URLs
-    # path('countries/', crud_views.country_list, name='country_list'),
-    # path('countries/create/', crud_views.country_create, name='country_create'),
-    # path('countries/<int:pk>/update/', crud_views.country_update, name='country_update'),
-    # path('countries/<int:pk>/delete/', crud_views.country_delete, name='country_delete'),
-
-    # Category CRUD URLs
-    # path('categories/', crud_views.category_list, name='category_list'),
-    # path('categories/create/', crud_views.category_create, name='category_create'),
-    # path('categories/<int:pk>/update/', crud_views.category_update, name='category_update'),
-    # path('categories/<int:pk>/delete/', crud_views.category_delete, name='category_delete'),
-
-    # Freight Calculator API URLs
-    # path('api/countries/', api_views.search_countries, name='api_countries'),
-    # path('api/categories/', api_views.search_categories, name='api_categories'),
-    # path('api/destination/', api_views.search_destinations, name='api_destinations'),
-    # path('api/calculate/', api_views.calculate_freight, name='api_calculate'),
 ]
 
