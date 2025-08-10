@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Countries - Freight Calculator{% endblock %}
+
+{% block page_title %}Countries Management{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'country_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i>Add New Country
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Flag</th>
+                        <th>Country Name</th>
+                        <th>Currency</th>
+                        <th>Categories</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for country in countries %}
+                    <tr>
+                        <td>{{ country.id }}</td>
+                        <td>
+                            <img src="{{ country.country_flag }}" alt="{{ country.country_name }}" 
+                                 style="width: 30px; height: 20px; object-fit: cover;" class="rounded">
+                        </td>
+                        <td>{{ country.country_name }}</td>
+                        <td><span class="badge bg-info">{{ country.country_currency }}</span></td>
+                        <td>
+                            <span class="badge bg-secondary">{{ country.category_set.count }} categories</span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'country_update' country.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'country_delete' country.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No countries found. <a href="{% url 'country_create' %}">Add the first country</a>.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

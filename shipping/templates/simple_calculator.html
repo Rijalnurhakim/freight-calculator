@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+
+{% block title %}Freight Calculator{% endblock %}
+
+{% block page_title %}Freight Calculator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-calculator me-2"></i>Calculate Shipping Cost
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">Calculate Shipping Cost</h5>
+                        
+                        <!-- Country Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Origin Country</label>
+                            <select id="countrySelect" class="form-select">
+                                <option value="">Select Country</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Category Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">Product Category</label>
+                            <select id="categorySelect" class="form-select" disabled>
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Destination Search -->
+                        <div class="mb-3">
+                            <label class="form-label">Destination</label>
+                            <input 
+                                id="destinationInput" 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Search destination city..."
+                            >
+                            <div id="destinationList" class="mt-2" style="display: none;">
+                                <div class="list-group" id="destinationOptions">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weight Input -->
+                        <div class="mb-3">
+                            <label class="form-label">Weight (kg)</label>
+                            <input id="weightInput" type="number" step="0.1" class="form-control" placeholder="Enter weight in kg">
+                        </div>
+                        
+                        <!-- Calculate Button -->
+                        <button 
+                            id="calculateBtn" 
+                            class="btn btn-primary w-100"
+                        >
+                            <span id="loadingSpinner" class="spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                            <span id="buttonText">Calculate</span>
+                        </button>
+                        
+                        <!-- Error Message -->
+                        <div id="errorMessage" class="alert alert-danger mt-3" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Result Display -->
+                        <div id="resultCard" class="card" style="display: none;">
+                            <div class="card-header">
+                                <h5 class="mb-0">Calculation Result</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Origin:</strong></div>
+                                    <div class="col-6" id="resultOrigin"></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Destination:</strong></div>
+                                    <div class="col-6" id="resultDestination"></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Category:</strong></div>
+                                    <div class="col-6" id="resultCategory"></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Weight:</strong></div>
+                                    <div class="col-6" id="resultWeight"></div>
+                                </div>
+                                <hr>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>International Price:</strong></div>
+                                    <div class="col-6" id="resultInternational"></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6"><strong>Domestic Price:</strong></div>
+                                    <div class="col-6" id="resultDomestic"></div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6"><strong>Total Price:</strong></div>
+                                    <div class="col-6"><strong class="text-primary" id="resultTotal"></strong></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sample Result for Demo -->
+                        <div id="sampleCard" class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Sample Calculation</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-calculator fa-3x mb-3"></i>
+                                    <p>Fill the form on the left to calculate shipping cost</p>
+                                    <small>Example: China → Surabaya, Electronics, 15 kg</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global variables
+let countries = [];
+let categories = [];
+let destinations = [];
+let selectedCountry = null;
+let selectedCategory = null;
+let selectedDestination = null;
+
+// Initialize calculator
+document.addEventListener('DOMContentLoaded', function() {
+    loadCountries();
+    setupEventListeners();
+});
+
+// Setup event listeners
+function setupEventListeners() {
+    document.getElementById('countrySelect').addEventListener('change', onCountryChange);
+    document.getElementById('destinationInput').addEventListener('input', onDestinationSearch);
+    document.getElementById('calculateBtn').addEventListener('click', calculateFreight);
+}
+
+// Load countries from API
+async function loadCountries() {
+    try {
+        const response = await fetch('/api/countries/');
+        countries = await response.json();
+        
+        const countrySelect = document.getElementById('countrySelect');
+        countrySelect.innerHTML = '<option value="">Select Country</option>';
+        
+        countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.id;
+            option.textContent = country.country_name;
+            option.dataset.country = JSON.stringify(country);
+            countrySelect.appendChild(option);
+        });
+    } catch (error) {
+        showError('Failed to load countries');
+    }
+}
+
+// Handle country selection change
+async function onCountryChange(event) {
+    const countryId = event.target.value;
+    const categorySelect = document.getElementById('categorySelect');
+    
+    if (!countryId) {
+        selectedCountry = null;
+        categorySelect.disabled = true;
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+        return;
+    }
+    
+    selectedCountry = JSON.parse(event.target.selectedOptions[0].dataset.country);
+    
+    try {
+        const response = await fetch(`/api/categories/?country_id=${countryId}`);
+        categories = await response.json();
+        
+        categorySelect.disabled = false;
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.category_title;
+            option.dataset.category = JSON.stringify(category);
+            categorySelect.appendChild(option);
+        });
+        
+        categorySelect.addEventListener('change', function(e) {
+            if (e.target.value) {
+                selectedCategory = JSON.parse(e.target.selectedOptions[0].dataset.category);
+            } else {
+                selectedCategory = null;
+            }
+        });
+        
+    } catch (error) {
+        showError('Failed to load categories');
+    }
+}
+
+// Handle destination search
+async function onDestinationSearch(event) {
+    const searchTerm = event.target.value;
+    const destinationList = document.getElementById('destinationList');
+    const destinationOptions = document.getElementById('destinationOptions');
+    
+    if (searchTerm.length < 3) {
+        destinationList.style.display = 'none';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/destination/?search=${searchTerm}`);
+        destinations = await response.json();
+        
+        destinationOptions.innerHTML = '';
+        
+        if (destinations.length > 0) {
+            destinations.forEach(dest => {
+                const button = document.createElement('button');
+                button.className = 'list-group-item list-group-item-action';
+                button.textContent = `${dest.city_name}, ${dest.province}`;
+                button.addEventListener('click', function() {
+                    selectedDestination = dest;
+                    document.getElementById('destinationInput').value = dest.city_name;
+                    destinationList.style.display = 'none';
+                });
+                destinationOptions.appendChild(button);
+            });
+            
+            destinationList.style.display = 'block';
+        } else {
+            destinationList.style.display = 'none';
+        }
+        
+    } catch (error) {
+        showError('Failed to search destinations');
+    }
+}
+
+// Calculate freight
+async function calculateFreight() {
+    const weight = document.getElementById('weightInput').value;
+    
+    if (!selectedCountry || !selectedCategory || !selectedDestination || !weight) {
+        showError('Please fill all fields');
+        return;
+    }
+    
+    setLoading(true);
+    hideError();
+    
+    try {
+        const response = await fetch('/api/calculate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                country_id: selectedCountry.id,
+                category_id: selectedCategory.id,
+                destination_id: selectedDestination.id,
+                weight: parseFloat(weight)
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Calculation failed');
+        }
+        
+        const result = await response.json();
+        showResult(result);
+        
+    } catch (error) {
+        showError(error.message || 'Calculation failed');
+    } finally {
+        setLoading(false);
+    }
+}
+
+// Show calculation result
+function showResult(result) {
+    document.getElementById('resultOrigin').textContent = result.origin;
+    document.getElementById('resultDestination').textContent = result.destination;
+    document.getElementById('resultCategory').textContent = result.category_name;
+    document.getElementById('resultWeight').textContent = `${result.weight} kg`;
+    document.getElementById('resultInternational').textContent = formatCurrency(result.international_price);
+    document.getElementById('resultDomestic').textContent = formatCurrency(result.domestic_price);
+    document.getElementById('resultTotal').textContent = formatCurrency(result.total_price);
+    
+    document.getElementById('sampleCard').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+}
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR'
+    }).format(amount);
+}
+
+// Show error message
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+// Hide error message
+function hideError() {
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+// Set loading state
+function setLoading(loading) {
+    const spinner = document.getElementById('loadingSpinner');
+    const buttonText = document.getElementById('buttonText');
+    const button = document.getElementById('calculateBtn');
+    
+    if (loading) {
+        spinner.style.display = 'inline-block';
+        buttonText.textContent = 'Calculating...';
+        button.disabled = true;
+    } else {
+        spinner.style.display = 'none';
+        buttonText.textContent = 'Calculate';
+        button.disabled = false;
+    }
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
+

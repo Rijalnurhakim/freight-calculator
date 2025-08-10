@@ -129,3 +129,8 @@ REST_FRAMEWORK = {
         'knox.auth.TokenAuthentication',
     ]
 }
+
+AUTH_USER_MODEL = 'shipping.User'  # Commented out to use default Django User model
+
+# Login URL
+# LOGIN_URL = '/login/'
