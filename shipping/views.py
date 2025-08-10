@@ -16,7 +16,7 @@ import json
 from .models import User, Country, Category
 from .serializers import RegisterSerializer, UserSerializer, CountrySerializer, CategorySerializer
 
-# from .form import RegisterForm
+from .form import RegisterForm
 # from django.contrib.auth.models import User
 
 from rest_framework.authtoken.models import Token
@@ -60,13 +60,13 @@ class LoginAPIView(APIView):
 
 def register_view(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            Token.objects.create(user=user)
+            Token.objects.get_or_create(user=user)
             return redirect('login')
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
     return render(request, 'register.html', {'form': form})
     #     username = request.POST["username"]
     #     email = request.POST["email"]
