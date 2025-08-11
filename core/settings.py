@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
 import environ
 import os
 
@@ -164,3 +163,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Ambil nilai variabel lingkungan
 KOMERCE_API_KEY = env('KOMERCE_API_KEY')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Untuk collectstatic
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]

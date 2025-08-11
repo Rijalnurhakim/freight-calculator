@@ -40,6 +40,9 @@ urlpatterns = [
     path('categories/<int:category_id>/update/', views.update_category, name='update_category'),
     path('categories/<int:category_id>/delete/', views.delete_category, name='delete_category'),
 
+    # Calculator
+    path('calculator/', views.calculator_page, name='calculator'),
+
     # Authentication URLs
     # path('api/register/', RegisterAPI.as_view(), name='register'),
     # path('api/logout/', knox_views.LogoutView.as_view(), name='logout'),

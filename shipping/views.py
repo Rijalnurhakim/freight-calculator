@@ -22,6 +22,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 import requests
 from django.conf import settings
+from django.shortcuts import render
 
 from .rajaongkir import get_rajaongkir_api
 
@@ -477,4 +478,7 @@ def calculate_freight(request):
     }
 
     return JsonResponse(response_data)
+
+def calculator_page(request):
+    return render(request, 'calculator.html')
 

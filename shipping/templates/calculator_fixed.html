@@ -111,18 +111,6 @@
             border-radius: 10px;
             margin-bottom: 20px;
         }
-        .flag-img {
-            width: 24px;
-            height: 16px;
-            margin-right: 8px;
-            border-radius: 2px;
-        }
-        .dropdown-item {
-            padding: 10px 15px;
-        }
-        .dropdown-item:hover {
-            background-color: #f8f9fa;
-        }
         .search-results {
             position: absolute;
             top: 100%;
@@ -149,6 +137,13 @@
         }
         .position-relative {
             position: relative;
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -177,7 +172,7 @@
                 <div class="row g-0">
                     <div class="col-lg-6">
                         <div class="form-section">
-                            <form ubmit.prevent="calculateFreight">
+                            <form @submit.prevent="calculateFreight">
                                 <!-- Origin Country -->
                                 <div class="form-group">
                                     <label class="form-label">
@@ -199,7 +194,7 @@
                                     <select v-model="selectedCategory" class="form-select" required :disabled="!selectedCountry">
                                         <option value="">Select Product Category</option>
                                         <option v-for="category in categories" :key="category.id" :value="category">
-                                            {{ category.category_title }} - Rp {{ category.price_per_kilo|floatformat:2 }}/kg
+                                            {{ category.category_title }} - Rp {{ formatPrice(category.price_per_kilo) }}/kg
                                         </option>
                                     </select>
                                 </div>
@@ -302,17 +297,17 @@
 
                                 <div class="result-item">
                                     <span class="result-label">International Shipping:</span>
-                                    <span class="result-value">Rp {{ result.international_price }}</span>
+                                    <span class="result-value">Rp {{ formatPrice(result.international_price) }}</span>
                                 </div>
 
                                 <div class="result-item">
                                     <span class="result-label">Domestic Shipping:</span>
-                                    <span class="result-value">Rp {{ result.domestic_price }}</span>
+                                    <span class="result-value">Rp {{ formatPrice(result.domestic_price) }}</span>
                                 </div>
 
                                 <div class="result-item">
                                     <span class="result-label">Total Shipping Price:</span>
-                                    <span class="result-value">Rp {{ result.total_price }}</span>
+                                    <span class="result-value">Rp {{ formatPrice(result.total_price) }}</span>
                                 </div>
 
                                 <div v-if="result.shipping_etd" class="mt-3">
@@ -334,6 +329,96 @@
     </div>
 
     <script>
+        // Mock API Data
+        const mockCountries = [
+            { id: 1, country_name: 'Indonesia', country_code: 'ID' },
+            { id: 2, country_name: 'Malaysia', country_code: 'MY' },
+            { id: 3, country_name: 'Singapore', country_code: 'SG' }
+        ];
+
+        const mockCategories = {
+            1: [
+                { id: 101, category_title: 'Electronics', price_per_kilo: 15000 },
+                { id: 102, category_title: 'Apparel', price_per_kilo: 10000 },
+                { id: 103, category_title: 'Books', price_per_kilo: 8000 }
+            ],
+            2: [
+                { id: 201, category_title: 'Automotive Parts', price_per_kilo: 20000 },
+                { id: 202, category_title: 'Food Products', price_per_kilo: 12000 }
+            ],
+            3: [
+                { id: 301, category_title: 'Luxury Goods', price_per_kilo: 30000 },
+                { id: 302, category_title: 'Documents', price_per_kilo: 5000 }
+            ]
+        };
+
+        const mockDestinations = [
+            { id: 1001, city: 'Jakarta', province: 'DKI Jakarta', country_id: 1 },
+            { id: 1002, city: 'Surabaya', province: 'Jawa Timur', country_id: 1 },
+            { id: 1003, city: 'Bandung', province: 'Jawa Barat', country_id: 1 },
+            { id: 2001, city: 'Kuala Lumpur', province: 'Wilayah Persekutuan', country_id: 2 },
+            { id: 2002, city: 'Penang', province: 'Pulau Pinang', country_id: 2 },
+            { id: 3001, city: 'Singapore', province: 'Singapore', country_id: 3 }
+        ];
+
+        // Mock axios functions
+        async function mockAxiosGet(url) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    if (url === '/api/countries/') {
+                        resolve({ data: mockCountries });
+                    } else if (url.startsWith('/api/categories/')) {
+                        const countryId = parseInt(url.split('country_id=')[1]);
+                        resolve({ data: mockCategories[countryId] || [] });
+                    } else if (url.startsWith('/api/destinations/search')) {
+                        const query = url.split('query=')[1].toLowerCase();
+                        const filteredDestinations = mockDestinations.filter(dest => 
+                            dest.city.toLowerCase().includes(query) || 
+                            dest.province.toLowerCase().includes(query)
+                        );
+                        resolve({ data: filteredDestinations });
+                    } else {
+                        resolve({ data: [] });
+                    }
+                }, 500);
+            });
+        }
+
+        async function mockAxiosPost(url, data) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    if (url === '/api/calculate-freight/') {
+                        const { country, category, destination, weight } = data;
+                        const basePrice = category.price_per_kilo * weight;
+                        const internationalPrice = country.id !== destination.country_id ? basePrice * 0.5 : 0;
+                        const domesticPrice = country.id === destination.country_id ? basePrice * 0.2 : basePrice * 0.1;
+                        const totalPrice = basePrice + internationalPrice + domesticPrice;
+
+                        resolve({
+                            data: {
+                                origin: country.country_name,
+                                destination: `${destination.city}, ${destination.province}`,
+                                category_name: category.category_title,
+                                weight: weight,
+                                international_price: internationalPrice.toFixed(2),
+                                domestic_price: domesticPrice.toFixed(2),
+                                total_price: totalPrice.toFixed(2),
+                                shipping_etd: '3-5 business days'
+                            }
+                        });
+                    } else {
+                        resolve({ data: {} });
+                    }
+                }, 1000);
+            });
+        }
+
+        // Replace axios with mock functions
+        window.axios = {
+            get: mockAxiosGet,
+            post: mockAxiosPost
+        };
+
         const { createApp } = Vue;
 
         createApp({
@@ -385,28 +470,29 @@
                         console.error('Error loading categories:', error);
                     }
                 },
+                searchDestinations() {
+                    this.loadDestinations();
+                },
                 async loadDestinations() {
                     if (!this.destinationSearch) {
                         this.destinations = [];
                         return;
                     }
-                    // Clear any previous timeout to avoid multiple API calls
                     clearTimeout(this.searchTimeout);
 
-                    // Set a new timeout to wait for user to finish typing
                     this.searchTimeout = setTimeout(async () => {
                         try {
-                            const response = await axios.get(`/api/destinations/?search=${this.destinationSearch}`);
-                            this.destinations = response.data.data; // Note: access .data.data
+                            const response = await axios.get(`/api/destinations/search?query=${this.destinationSearch}`);
+                            this.destinations = response.data;
                         } catch (error) {
                             this.error = 'Failed to load destinations';
                             console.error('Error loading destinations:', error);
                         }
-                    }, 500); // 500ms delay
+                    }, 500);
                 },
                 selectDestination(destination) {
                     this.selectedDestination = destination;
-                    this.destinationSearch = destination.label;
+                    this.destinationSearch = `${destination.city}, ${destination.province}`;
                     this.showDestinations = false;
                 },
                 async calculateFreight() {
@@ -420,12 +506,12 @@
 
                     try {
                         const payload = {
-                            country_id: this.selectedCountry.id,
-                            category_id: this.selectedCategory.id,
-                            destination_id: this.selectedDestination.id,
+                            country: this.selectedCountry,
+                            category: this.selectedCategory,
+                            destination: this.selectedDestination,
                             weight: this.weight
                         };
-                        const response = await axios.post('/api/calculate/', payload);
+                        const response = await axios.post('/api/calculate-freight/', payload);
                         this.result = response.data;
                     } catch (error) {
                         if (error.response && error.response.data && error.response.data.error) {
@@ -437,9 +523,16 @@
                     } finally {
                         this.calculating = false;
                     }
+                },
+                formatPrice(value) {
+                    return parseFloat(value).toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
                 }
             }
         }).mount('#app');
     </script>
 </body>
 </html>
+
