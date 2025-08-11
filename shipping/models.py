@@ -11,6 +11,7 @@ class Country(models.Model):
     country_name = models.CharField(max_length=100)
     country_flag = models.URLField()
     country_currency = models.CharField(max_length=10)
+    origin_city_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.country_name

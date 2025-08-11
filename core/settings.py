@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -142,3 +145,22 @@ CSRF_TRUSTED_ORIGINS = [
     'https://8000-ialvgtnrd4i64ac54cwo2-791f76c7.manusvm.computer',
     'https://*.manusvm.computer',
 ]
+
+# KOMERCE_API_KEY = config('KOMERCE_API_KEY')
+
+# Set base directory untuk proyek
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Inisialisasi django-environ
+env = environ.Env(
+    # set default value di sini jika variabel tidak ditemukan
+    KOMERCE_API_KEY=(str, '')
+)
+
+RAJAONGKIR_API_KEY = 'Zg266RcSad898d4cba3f7d2bfkvZl0Ig'
+
+# Baca file .env dari direktori root
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# Ambil nilai variabel lingkungan
+KOMERCE_API_KEY = env('KOMERCE_API_KEY')

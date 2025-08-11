@@ -15,10 +15,12 @@ urlpatterns = [
     path('api/user/', views.UserAPI.as_view(), name='api_user'),
 
     # API Calculator Endpoints
-    path('api/countries/', views.search_countries, name='api_countries'),
-    path('api/categories/', views.search_categories, name='api_categories'),
-    path('api/destinations/', views.search_destinations, name='api_destinations'),
-    path('api/calculate/', views.calculate_freight, name='api_calculate'),
+    path('api/countries/', views.search_countries, name='search_countries'),
+
+    path('api/categories/', views.search_categories, name='search_categories'),
+    # path('api/destinations/', views.search_destinations, name='api_destinations'),
+    path('api/destinations/', views.get_destinations),
+    path('api/calculate/', views.calculate_freight, name='calculate_freight'),
 
     # Dashboard Views
     path('', views.dashboard_view, name='dashboard'),
