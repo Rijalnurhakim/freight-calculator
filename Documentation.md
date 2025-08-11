@@ -1,9 +1,9 @@
-# FreightCalculator Project - Summary & Documentation
+## FreightCalculator Project - Summary & Documentation
 
-## 🎯 Project Overview
+## Project Overview
 FreightCalculator adalah aplikasi web Django untuk menghitung biaya pengiriman barang internasional dan domestik. Project ini telah berhasil diselesaikan dengan semua fitur yang diminta oleh user.
 
-## ✅ Fitur yang Telah Diimplementasi
+## Fitur yang Telah Diimplementasi
 
 ### 1. **Authentication System**
 - Login/Register functionality
@@ -45,7 +45,7 @@ FreightCalculator adalah aplikasi web Django untuk menghitung biaya pengiriman b
 - **Sample destinations**: Sukolilo Surabaya, Surabaya, dll.
 - SQLite database dengan proper relationships
 
-## 🛠 Technical Stack
+## Technical Stack
 - **Backend**: Django 5.2.5
 - **API**: Django REST Framework
 - **Authentication**: Django Knox
@@ -53,7 +53,7 @@ FreightCalculator adalah aplikasi web Django untuk menghitung biaya pengiriman b
 - **Frontend**: HTML, CSS, JavaScript, Bootstrap 5
 - **Icons**: Font Awesome
 
-## 📁 Project Structure
+## Project Structure
 ```
 FreightCalculator/
 ├── core/                    # Django project settings
@@ -80,7 +80,7 @@ FreightCalculator/
 └── populate_data.py      # Data population script
 ```
 
-## 🚀 How to Run
+## How to Run
 
 ### 1. **Setup Environment**
 ```bash
@@ -112,7 +112,7 @@ python manage.py runserver
 - **Calculator**: http://127.0.0.1:8000/calculator/
 - **Admin**: http://127.0.0.1:8000/admin/
 
-## 🧪 Testing Results
+## Testing Results
 
 ### API Testing
 ✅ **GET /api/countries/** - Returns 7 countries
@@ -137,7 +137,7 @@ python manage.py runserver
 ✅ Form validation dan error handling
 ✅ Responsive design
 
-## 🔧 Error Fixes Applied
+## Error Fixes Applied
 
 1. **AUTH_USER_MODEL Setting**: Fixed configuration in settings.py
 2. **Indentation Error**: Fixed serializers.py syntax
@@ -146,7 +146,7 @@ python manage.py runserver
 5. **URL Configuration**: Fixed login redirect settings
 6. **Database Migration**: Successfully applied all migrations
 
-## 📊 Sample Data Populated
+## Sample Data Populated
 
 ### Countries (7)
 - China, Thailand, Singapore, Japan, South Korea, Malaysia, Vietnam
@@ -158,7 +158,7 @@ python manage.py runserver
 - Sukolilo, Surabaya, Jawa Timur, 60117
 - Surabaya, Jawa Timur
 
-## 🎨 UI/UX Features
+## UI/UX Features
 
 - **Responsive Design**: Works on desktop and mobile
 - **Modern UI**: Bootstrap 5 with custom styling
@@ -167,21 +167,21 @@ python manage.py runserver
 - **Loading States**: Visual feedback during calculations
 - **Currency Formatting**: Proper IDR formatting
 
-## 🔐 Security Features
+## Security Features
 
 - **Authentication Required**: All main features require login
 - **CSRF Protection**: Django CSRF tokens
 - **Input Validation**: Server-side validation
 - **SQL Injection Protection**: Django ORM
 
-## 📈 Performance
+## Performance
 
 - **Fast API Responses**: < 100ms for most endpoints
 - **Efficient Queries**: Optimized database queries
 - **Minimal JavaScript**: Lightweight frontend
 - **Caching**: Django template caching
 
-## 🎯 Achievement Summary
+## Achievement Summary
 
 ✅ **100% Requirements Met**: Semua fitur yang diminta telah diimplementasi
 ✅ **Error-Free**: Semua error yang ada telah diperbaiki
@@ -189,7 +189,7 @@ python manage.py runserver
 ✅ **Production Ready**: Code quality dan structure yang baik
 ✅ **Well Documented**: Dokumentasi lengkap dan clear instructions
 
-## 🚀 Next Steps (Optional Enhancements)
+## Next Steps (Optional Enhancements)
 
 1. **Deployment**: Deploy ke production server (Heroku, DigitalOcean, dll)
 2. **Advanced Features**: 

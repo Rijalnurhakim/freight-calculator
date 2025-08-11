@@ -31,11 +31,11 @@
 - [ ] Add proper navigation between pages
 
 #### 3. API Development
-- [ ] Create API endpoint: /api/countries?search={}
-- [ ] Create API endpoint: /api/categories?country_id={}&search={}
-- [ ] Create API endpoint: /api/destination?search={city}
-- [ ] Create API endpoint: /api/calculate
-- [ ] Integrate Raja Ongkir API for domestic shipping
+- [x] Create API endpoint: /api/countries?search={}
+- [x] Create API endpoint: /api/categories?country_id={}&search={}
+- [x] Create API endpoint: /api/destination?search={city}
+- [x] Create API endpoint: /api/calculate
+- [x] Integrate Raja Ongkir API for domestic shipping
 
 #### 4. Frontend Calculator
 - [ ] Create Vue.js/Nuxt.js calculator component
@@ -44,8 +44,8 @@
 - [ ] Add responsive design
 
 #### 5. Dashboard
-- [ ] Create main dashboard template
-- [ ] Add navigation menu
-- [ ] Display calculator and CRUD links
-- [ ] Add user authentication checks
+- [x] Create main dashboard template
+- [x] Add navigation menu
+- [x] Display calculator and CRUD links
+- [x] Add user authentication checks
 
